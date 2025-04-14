@@ -12,7 +12,6 @@ from mani_skill2_real2sim.utils.sapien_utils import (
 
 
 class GoogleRobot(BaseAgent):
-
     """
         Google Robot with the following modifications from the original :
             - "joint_finger_{left/right}" are set as fixed joints with a fixed rotation from their corresponding "link_finger_{left/right}" (see urdf), in order to simulate the actual gripper during real evaluation
@@ -34,6 +33,7 @@ class GoogleRobot(BaseAgent):
         self.base_inertial_link = [
             x for x in self.robot.get_links() if x.name == "link_base_inertial"
         ][0]
+        self.ee_link = [x for x in self.robot.get_links() if x.name == "link_gripper_tcp"][0]
 
         self.finger_right_joint = get_entity_by_name(
             self.robot.get_joints(), "joint_finger_right"
@@ -103,15 +103,15 @@ class GoogleRobot(BaseAgent):
 
         # direction to open the gripper
         ldirection_tip = self.finger_left_tip_link.pose.to_transformation_matrix()[
-            :3, 1
-        ]
+                         :3, 1
+                         ]
         ldirection_finger = self.finger_left_link.pose.to_transformation_matrix()[:3, 1]
         rdirection_tip = self.finger_right_tip_link.pose.to_transformation_matrix()[
-            :3, 1
-        ]
+                         :3, 1
+                         ]
         rdirection_finger = self.finger_right_link.pose.to_transformation_matrix()[
-            :3, 1
-        ]
+                            :3, 1
+                            ]
 
         # angle between impulse and open direction
         langle = compute_angle_between(ldirection_tip, limpulse_tip)
@@ -120,13 +120,13 @@ class GoogleRobot(BaseAgent):
         rangle = min(rangle, compute_angle_between(rdirection_finger, rimpulse_finger))
 
         lflag = (
-            max(np.linalg.norm(limpulse_tip), np.linalg.norm(limpulse_finger))
-            >= min_impulse
-        ) and np.rad2deg(langle) <= max_angle
+                        max(np.linalg.norm(limpulse_tip), np.linalg.norm(limpulse_finger))
+                        >= min_impulse
+                ) and np.rad2deg(langle) <= max_angle
         rflag = (
-            max(np.linalg.norm(rimpulse_tip), np.linalg.norm(rimpulse_finger))
-            >= min_impulse
-        ) and np.rad2deg(rangle) <= max_angle
+                        max(np.linalg.norm(rimpulse_tip), np.linalg.norm(rimpulse_finger))
+                        >= min_impulse
+                ) and np.rad2deg(rangle) <= max_angle
         # print(np.linalg.norm(limpulse_tip), np.linalg.norm(limpulse_finger), np.linalg.norm(rimpulse_tip), np.linalg.norm(rimpulse_finger), langle, rangle)
 
         return all([lflag, rflag])
@@ -189,6 +189,10 @@ class GoogleRobot(BaseAgent):
     def base_pose(self):
         return self.base_link.get_pose()
 
+    @property
+    def ee_pose(self):
+        return self.ee_link.get_pose()
+
     def set_base_pose(self, xy):
         # set the x and y coordinates of the robot base
         robot_pose = self.robot.get_pose()
@@ -205,7 +209,7 @@ class GoogleRobotStaticBase(GoogleRobot):
         return defaults.GoogleRobotStaticBaseConfig()
 
     def __init__(
-        self, scene, control_freq, control_mode=None, fix_root_link=True, config=None
+            self, scene, control_freq, control_mode=None, fix_root_link=True, config=None
     ):
         if control_mode is None:  # if user did not specify a control_mode
             control_mode = "arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner"
@@ -231,21 +235,24 @@ class GoogleRobotStaticBaseHalfFingerFriction(GoogleRobotStaticBase):
     @classmethod
     def get_default_config(cls):
         return defaults.GoogleRobotStaticBaseHalfFingerFrictionConfig()
-    
+
+
 class GoogleRobotStaticBaseQuarterFingerFriction(GoogleRobotStaticBase):
     _config: defaults.GoogleRobotStaticBaseQuarterFingerFrictionConfig
 
     @classmethod
     def get_default_config(cls):
         return defaults.GoogleRobotStaticBaseQuarterFingerFrictionConfig()
-    
+
+
 class GoogleRobotStaticBaseOneEighthFingerFriction(GoogleRobotStaticBase):
     _config: defaults.GoogleRobotStaticBaseOneEighthFingerFrictionConfig
 
     @classmethod
     def get_default_config(cls):
         return defaults.GoogleRobotStaticBaseOneEighthFingerFrictionConfig()
-    
+
+
 class GoogleRobotStaticBaseTwiceFingerFriction(GoogleRobotStaticBase):
     _config: defaults.GoogleRobotStaticBaseTwiceFingerFrictionConfig
 
@@ -254,15 +261,14 @@ class GoogleRobotStaticBaseTwiceFingerFriction(GoogleRobotStaticBase):
         return defaults.GoogleRobotStaticBaseTwiceFingerFrictionConfig()
 
 
-
 class GoogleRobotStaticBaseManualTunedIntrinsic(GoogleRobotStaticBase):
     _config: defaults.GoogleRobotStaticBaseManualTunedIntrinsicConfig
 
     @classmethod
     def get_default_config(cls):
         return defaults.GoogleRobotStaticBaseManualTunedIntrinsicConfig()
-    
-    
+
+
 class GoogleRobotStaticBaseWorseControl1(GoogleRobotStaticBase):
     _config: defaults.GoogleRobotStaticBaseWorseControl1Config
 
@@ -295,7 +301,7 @@ class GoogleRobotMobileBase(GoogleRobot):
         return defaults.GoogleRobotMobileBaseConfig()
 
     def __init__(
-        self, scene, control_freq, control_mode=None, fix_root_link=True, config=None
+            self, scene, control_freq, control_mode=None, fix_root_link=True, config=None
     ):
         if control_mode is None:  # if user did not specify a control_mode
             control_mode = "base_pd_joint_vel_arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner"
