@@ -3,3 +3,7 @@ from . import move_near_in_scene
 from . import open_drawer_in_scene
 from . import put_on_in_scene
 from . import place_in_closed_drawer_in_scene
+from . import put_on_in_scene_distractor
+from . import unseen_obj_simple
+from . import put_on_in_scene_multi
+from . import put_on_in_scene_ambig

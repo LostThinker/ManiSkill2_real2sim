@@ -78,21 +78,22 @@ class BaseEnv(gym.Env):
     _render_camera_cfgs: Dict[str, CameraConfig]
 
     def __init__(
-        self,
-        obs_mode: str = None,
-        reward_mode: str = None,
-        control_mode: str = None,
-        render_mode: str = None,
-        sim_freq: int = 500,
-        control_freq: int = 20,
-        renderer: str = "sapien",
-        renderer_kwargs: dict = None,
-        shader_dir: str = "ibl",
-        render_config: dict = None,
-        enable_shadow: bool = False,
-        camera_cfgs: dict = None,
-        render_camera_cfgs: dict = None,
-        bg_name: str = None,
+            self,
+            obs_mode: str = None,
+            reward_mode: str = None,
+            control_mode: str = None,
+            render_mode: str = None,
+            sim_freq: int = 500,
+            control_freq: int = 20,
+            renderer: str = "sapien",
+            renderer_kwargs: dict = None,
+            shader_dir: str = "ibl",
+            render_config: dict = None,
+            enable_shadow: bool = False,
+            camera_cfgs: dict = None,
+            render_camera_cfgs: dict = None,
+            bg_name: str = None,
+            **kwargs
     ):
         # Create SAPIEN engine
         self._engine = sapien.Engine()
@@ -207,7 +208,7 @@ class BaseEnv(gym.Env):
             self._camera_cfgs.update(self._agent_camera_cfgs)
 
     def _register_cameras(
-        self,
+            self,
     ) -> Union[CameraConfig, Sequence[CameraConfig], Dict[str, CameraConfig]]:
         """Register (non-agent) cameras for the environment."""
         return []
@@ -216,7 +217,7 @@ class BaseEnv(gym.Env):
         self._render_camera_cfgs = parse_camera_cfgs(self._register_render_cameras())
 
     def _register_render_cameras(
-        self,
+            self,
     ) -> Union[CameraConfig, Sequence[CameraConfig], Dict[str, CameraConfig]]:
         """Register cameras for rendering."""
         return []
@@ -664,11 +665,11 @@ class BaseEnv(gym.Env):
         KINEMANTIC_DIM = 13  # [pos, quat, lin_vel, ang_vel]
         start = 0
         for actor in self._actors:
-            set_actor_state(actor, state[start : start + KINEMANTIC_DIM])
+            set_actor_state(actor, state[start: start + KINEMANTIC_DIM])
             start += KINEMANTIC_DIM
         for articulation in self._articulations:
             ndim = KINEMANTIC_DIM + 2 * articulation.dof
-            set_articulation_state(articulation, state[start : start + ndim])
+            set_articulation_state(articulation, state[start: start + ndim])
             start += ndim
 
     def get_state(self):

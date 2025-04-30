@@ -20,13 +20,13 @@ class MoveNearInSceneEnv(CustomSceneEnv):
     DEFAULT_MODEL_JSON: str
 
     def __init__(
-        self,
-        original_lighting: bool = False,
-        slightly_darker_lighting: bool = False,
-        slightly_brighter_lighting: bool = False,
-        ambient_only_lighting: bool = False,
-        prepackaged_config: bool = False,
-        **kwargs,
+            self,
+            original_lighting: bool = False,
+            slightly_darker_lighting: bool = False,
+            slightly_brighter_lighting: bool = False,
+            ambient_only_lighting: bool = False,
+            prepackaged_config: bool = False,
+            **kwargs,
     ):
         self.episode_objs = [None] * 3
         self.episode_model_ids = [None] * 3
@@ -168,9 +168,9 @@ class MoveNearInSceneEnv(CustomSceneEnv):
                 "episode_source_obj_name": self.episode_source_obj.name,
                 "episode_target_obj_name": self.episode_target_obj.name,
                 "episode_source_obj_init_pose_wrt_robot_base": self.agent.robot.pose.inv()
-                * self.episode_source_obj.pose,
+                                                               * self.episode_source_obj.pose,
                 "episode_target_obj_init_pose_wrt_robot_base": self.agent.robot.pose.inv()
-                * self.episode_target_obj.pose,
+                                                               * self.episode_target_obj.pose,
             }
         )
         return obs, info
@@ -180,7 +180,7 @@ class MoveNearInSceneEnv(CustomSceneEnv):
         options["robot_init_options"] = {
             "init_xy": [0.35, 0.21],
             "init_rot_quat": (
-                sapien.Pose(q=euler2quat(0, 0, -0.09)) * sapien.Pose(q=[0, 0, 0, 1])
+                    sapien.Pose(q=euler2quat(0, 0, -0.09)) * sapien.Pose(q=[0, 0, 0, 1])
             ).q,
         }
         new_urdf_version = self._episode_rng.choice(
@@ -248,7 +248,7 @@ class MoveNearInSceneEnv(CustomSceneEnv):
         # model bbox sizes
         model_bbox_sizes = []
         for model_id, model_scale in zip(
-            self.episode_model_ids, self.episode_model_scales
+                self.episode_model_ids, self.episode_model_scales
         ):
             model_info = self.model_db[model_id]
             if "bbox" in model_info:
@@ -281,7 +281,7 @@ class MoveNearInSceneEnv(CustomSceneEnv):
         assert obj_init_xys.shape == (len(self.episode_objs), 2)
 
         obj_init_z = self.obj_init_options.get("init_z", self.scene_table_height)
-        obj_init_z = obj_init_z + 0.5 # let object fall onto the table
+        obj_init_z = obj_init_z + 0.5  # let object fall onto the table
 
         obj_init_rot_quats = self.obj_init_options.get("init_rot_quats", None)
         if obj_init_rot_quats is not None:
@@ -303,7 +303,7 @@ class MoveNearInSceneEnv(CustomSceneEnv):
         self.agent.robot.set_pose(sapien.Pose([-10, 0, 0]))
 
         self._settle(0.5)
-        
+
         # Unlock motion
         for obj in self.episode_objs:
             obj.lock_motion(0, 0, 0, 0, 0, 0)
@@ -331,13 +331,20 @@ class MoveNearInSceneEnv(CustomSceneEnv):
             target_obj_id
         ]
         self.episode_source_obj_bbox_world = (
-            quat2mat(self.episode_source_obj.pose.q)
-            @ self.episode_source_obj_bbox_world
+                quat2mat(self.episode_source_obj.pose.q)
+                @ self.episode_source_obj_bbox_world
         )
         self.episode_target_obj_bbox_world = (
-            quat2mat(self.episode_target_obj.pose.q)
-            @ self.episode_target_obj_bbox_world
+                quat2mat(self.episode_target_obj.pose.q)
+                @ self.episode_target_obj_bbox_world
         )
+
+        self.episode_obj_bbox_world = []
+        for i, objs in enumerate(self.episode_objs):
+            self.episode_obj_bbox_world.append(
+                quat2mat(objs.pose.q)
+                @ self.episode_model_bbox_sizes[i]
+            )
 
     @property
     def source_obj_pose(self):
@@ -351,6 +358,11 @@ class MoveNearInSceneEnv(CustomSceneEnv):
         """Get the center of mass (COM) pose."""
         return self.episode_target_obj.pose.transform(
             self.episode_target_obj.cmass_local_pose
+        )
+
+    def get_obj_pose(self, obj_id):
+        return self.episode_objs[obj_id].pose.transform(
+            self.episode_objs[obj_id].cmass_local_pose
         )
 
     def _get_obs_extra(self) -> OrderedDict:
@@ -372,7 +384,7 @@ class MoveNearInSceneEnv(CustomSceneEnv):
             i
             for (i, obj) in enumerate(self.episode_objs)
             if (obj.name != self.episode_source_obj.name)
-            and (obj.name != self.episode_target_obj.name)
+               and (obj.name != self.episode_target_obj.name)
         ]
         other_obj_heights = [self.episode_objs[i].pose.p[2] for i in other_obj_ids]
         other_obj_heights_after_settle = [
@@ -385,15 +397,15 @@ class MoveNearInSceneEnv(CustomSceneEnv):
             [x > -0.02 for x in other_obj_diff_heights]
         )  # require other objects to not be knocked down on the table
         source_obj_diff_height = (
-            source_obj_pose.p[2] - self.episode_source_obj_xyz_after_settle[2]
+                source_obj_pose.p[2] - self.episode_source_obj_xyz_after_settle[2]
         )  # source object should not be knocked off the table
         target_obj_diff_height = (
-            target_obj_pose.p[2] - self.episode_target_obj_xyz_after_settle[2]
+                target_obj_pose.p[2] - self.episode_target_obj_xyz_after_settle[2]
         )  # target object should not be knocked off the table
         all_obj_keep_height = (
-            other_obj_keep_height
-            and (source_obj_diff_height > -0.15)
-            and (target_obj_diff_height > -0.15)
+                other_obj_keep_height
+                and (source_obj_diff_height > -0.15)
+                and (target_obj_diff_height > -0.15)
         )
 
         # Check if moving the correct source object
@@ -403,7 +415,7 @@ class MoveNearInSceneEnv(CustomSceneEnv):
         )
         other_obj_xy_move_dist = []
         for obj, obj_xyz_after_settle in zip(
-            self.episode_objs, self.episode_obj_xyzs_after_settle
+                self.episode_objs, self.episode_obj_xyzs_after_settle
         ):
             if obj.name == self.episode_source_obj.name:
                 continue
@@ -420,14 +432,14 @@ class MoveNearInSceneEnv(CustomSceneEnv):
         # Check if the source object is near the target object
         dist_to_tgt_obj = np.linalg.norm(source_obj_pose.p[:2] - target_obj_pose.p[:2])
         tgt_obj_bbox_xy_dist = (
-            np.linalg.norm(self.episode_target_obj_bbox_world[:2]) / 2
+                np.linalg.norm(self.episode_target_obj_bbox_world[:2]) / 2
         )  # get half-length of bbox xy diagonol distance in the world frame at timestep=0
         src_obj_bbox_xy_dist = (
-            np.linalg.norm(self.episode_source_obj_bbox_world[:2]) / 2
+                np.linalg.norm(self.episode_source_obj_bbox_world[:2]) / 2
         )
         # print(dist_to_tgt_obj, tgt_obj_bbox_xy_dist, src_obj_bbox_xy_dist)
         near_tgt_obj = (
-            dist_to_tgt_obj < tgt_obj_bbox_xy_dist + src_obj_bbox_xy_dist + 0.10
+                dist_to_tgt_obj < tgt_obj_bbox_xy_dist + src_obj_bbox_xy_dist + 0.10
         )
 
         # Check if the source object is closest to the target object
@@ -443,10 +455,10 @@ class MoveNearInSceneEnv(CustomSceneEnv):
         )
 
         success = (
-            all_obj_keep_height
-            and moved_correct_obj
-            and near_tgt_obj
-            and is_closest_to_tgt
+                all_obj_keep_height
+                and moved_correct_obj
+                and near_tgt_obj
+                and is_closest_to_tgt
         )
 
         ret_info = dict(
@@ -532,25 +544,25 @@ class MoveNearGoogleInSceneEnv(MoveNearInSceneEnv, CustomOtherObjectsInSceneEnv)
         obj_init_options = options.get("obj_init_options", {})
         obj_init_options = obj_init_options.copy()
         _num_episodes = (
-            len(self.triplets)
-            * len(self._source_obj_ids)
-            * len(self._xy_config_per_triplet)
+                len(self.triplets)
+                * len(self._source_obj_ids)
+                * len(self._xy_config_per_triplet)
         )
         episode_id = obj_init_options.get(
             "episode_id", self._episode_rng.randint(_num_episodes)
         )
         triplet = self.triplets[
             episode_id // (len(self._source_obj_ids) * len(self._xy_config_per_triplet))
-        ]
+            ]
         source_obj_id = self._source_obj_ids[episode_id % len(self._source_obj_ids)]
         target_obj_id = self._target_obj_ids[episode_id % len(self._target_obj_ids)]
         xy_config_triplet = self._xy_config_per_triplet[
             (
-                episode_id
-                % (len(self._source_obj_ids) * len(self._xy_config_per_triplet))
+                    episode_id
+                    % (len(self._source_obj_ids) * len(self._xy_config_per_triplet))
             )
             // len(self._source_obj_ids)
-        ]
+            ]
         quat_config_triplet = [
             self.obj_init_quat_dict[model_id] for model_id in triplet
         ]
@@ -581,7 +593,7 @@ class MoveNearGoogleInSceneEnv(MoveNearInSceneEnv, CustomOtherObjectsInSceneEnv)
     def _load_model(self):
         self.episode_objs = []
         for (model_id, model_scale) in zip(
-            self.episode_model_ids, self.episode_model_scales
+                self.episode_model_ids, self.episode_model_scales
         ):
             if model_id in self.special_density_dict:
                 density = self.special_density_dict[model_id]

@@ -455,11 +455,11 @@ class CustomOtherObjectsInSceneEnv(CustomSceneEnv):
                     "Additionally, for assets in the original ManiSkill2 repo, you can copy the assets into the directory that corresponds to MS2_REAL2SIM_ASSET_DIR."
                 )
 
-            collision_file = model_dir / "collision.obj"
-            if not collision_file.exists():
-                raise FileNotFoundError(
-                    "convex.obj has been renamed to collision.obj. "
-                )
+            # collision_file = model_dir / "collision.obj"
+            # if not collision_file.exists():
+            #     raise FileNotFoundError(
+            #         "convex.obj has been renamed to collision.obj. "
+            #     )
                 
     @staticmethod
     def _build_actor_helper(
@@ -474,6 +474,8 @@ class CustomOtherObjectsInSceneEnv(CustomSceneEnv):
         model_dir = Path(root_dir) / "models" / model_id
 
         collision_file = str(model_dir / "collision.obj")
+        if not os.path.exists(collision_file):
+            collision_file = str(model_dir / "collision.ply")
         builder.add_multiple_collisions_from_file(
             filename=collision_file,
             scale=[scale] * 3,
@@ -495,3 +497,7 @@ class CustomOtherObjectsInSceneEnv(CustomSceneEnv):
 
 class CustomBridgeObjectsInSceneEnv(CustomOtherObjectsInSceneEnv):
     DEFAULT_MODEL_JSON = "info_bridge_custom_v0.json"
+
+
+class CustomBridgeMultiObjectsInSceneEnv(CustomOtherObjectsInSceneEnv):
+    DEFAULT_MODEL_JSON = "info_bridge_custom_v1.json"
