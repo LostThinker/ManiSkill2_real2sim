@@ -26,7 +26,7 @@ class PutVegetableOnPlateInScene(PutOnBridgeInSceneEnv):
         source_obj_name = "bridge_carrot_generated_modified"
         target_obj_name = "bridge_plate_objaverse_larger"
         kwargs.pop("distractor_obj_names", None)
-        distractor_obj_names = ["apple", "eggplant"]
+        distractor_obj_names = ["apple", "eggplant", "011_banana"]
 
         xy_center = np.array([-0.16, 0.00])
         half_edge_length_x = 0.075
@@ -226,3 +226,59 @@ class PutFruitOnPlateInScene(PutOnBridgeInSceneEnv):
         ]
 
         return prompts[idx]
+
+
+@register_env("PutSameTwoOnPlateInScene-v0", max_episode_steps=100)
+class PutSameTwoOnPlateInScene(PutOnBridgeInSceneEnv):
+    def __init__(self, **kwargs):
+        source_obj_name = "coke_can"
+        target_obj_name = "bridge_plate_objaverse_larger"
+        kwargs.pop("distractor_obj_names", None)
+        distractor_obj_names = ["apple", "coke_can", "pepsi_can"]
+
+        xy_center = np.array([-0.16, 0.00])
+        half_edge_length_x = 0.075
+        # half_edge_length_y = 0.075
+        half_edge_length_y = 0.1
+        obj_num = len(distractor_obj_names) + 2
+
+        xy_configs = self._get_pose_config(xy_center, half_edge_length_x, half_edge_length_y, obj_num)
+
+        quat_configs_1 = [euler2quat(0, 0, -np.pi / 2), [1, 0, 0, 0]] + [euler2quat(0, 0, -np.pi / 2)] * len(distractor_obj_names)
+        quat_configs_2 = [euler2quat(0, 0, -np.pi / 2), [1, 0, 0, 0]] + [euler2quat(0, 0, -np.pi / 2)] * len(distractor_obj_names)
+        quat_configs = [
+            np.array(quat_configs_1),
+            np.array(quat_configs_2),
+        ]
+
+        super().__init__(
+            source_obj_name=source_obj_name,
+            target_obj_name=target_obj_name,
+            distractor_obj_names=distractor_obj_names,
+            xy_configs=xy_configs,
+            quat_configs=quat_configs,
+            **kwargs,
+        )
+
+    def get_language_instruction(self, **kwargs):
+        return "put banana on plate"
+        # return "put eggplant on plate that is not white"
+
+    def get_ambig_instruction(self, idx):
+        ambig_instruction = [
+            "Hello robot. Can you help me put some food on the plate for dinner?",
+            "Hello robot. Can you help me straighten up the table? That eggplant is falling out of the plate.",
+        ]
+
+        return ambig_instruction[idx]
+
+    def get_prompt(self, idx):
+        prompts = [
+            "Your intention is to have a robot help you prepare for dinner. Instead of wanting apples, you plan to fry eggplant. You need to get the robot to help you put the eggplant on an orange colored plate that is specifically for vegetables.",
+            "Your goal is to get the robot to help you organize your desktop. You need to get the robot to help you put the eggplants on the orange plate that is dedicated to vegetables."
+        ]
+
+        return prompts[idx]
+
+
+

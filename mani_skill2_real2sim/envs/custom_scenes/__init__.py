@@ -7,3 +7,4 @@ from . import put_on_in_scene_distractor
 from . import unseen_obj_simple
 from . import put_on_in_scene_multi
 from . import put_on_in_scene_ambig
+from . import put_on_bin_multi

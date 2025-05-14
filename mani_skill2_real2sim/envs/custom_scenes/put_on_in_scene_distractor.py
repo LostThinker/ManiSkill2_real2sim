@@ -124,22 +124,38 @@ class PutOnBridgeInSceneEnv(PutOnInSceneEnv, CustomBridgeMultiObjectsInSceneEnv)
             obj.name = model_id
             self.episode_objs.append(obj)
 
-    def _get_pose_config(self, xy_center, half_edge_length_x=0.075, half_edge_length_y=0.1, obj_num=2):
+    def _get_pose_config(
+            self,
+            xy_center,
+            half_edge_length_x=0.075,
+            half_edge_length_y=0.1,
+            obj_num=2,
+            grid_size_x=3,
+            grid_size_y=3,
+            remove_x_line=True,
+            threshold=None
+    ):
         # 生成网格点的相对位置
-        grid_size = 3  # 这里可以根据需要调整网格大小
-        grid_positions = []
-        for i in range(grid_size):
-            for j in range(grid_size):
-                grid_positions.append([i, j])
-        grid_pos = np.array(grid_positions) * 2 / (grid_size - 1) - 1
-        grid_pos_new = []
+        if threshold is None:
+            threshold = half_edge_length_x
 
-        for pos in grid_pos:
-            if pos[0] == 0 and pos[1] != 0:
-                pass
-            else:
-                grid_pos_new.append(pos)
-        grid_pos = np.stack(grid_pos_new, axis=0)
+        # grid_size = 3  # 这里可以根据需要调整网格大小
+        grid_positions = []
+        for i in range(grid_size_x):
+            for j in range(grid_size_y):
+                x = i * 2 / (grid_size_x - 1) - 1
+                y = j * 2 / (grid_size_y - 1) - 1
+                grid_positions.append([x, y])
+        grid_pos = np.array(grid_positions)
+
+        if remove_x_line:
+            grid_pos_new = []
+            for pos in grid_pos:
+                if pos[0] == 0 and pos[1] != 0:
+                    pass
+                else:
+                    grid_pos_new.append(pos)
+            grid_pos = np.stack(grid_pos_new, axis=0)
 
         # 计算网格点的实际坐标
         grid_pos = (
@@ -155,7 +171,7 @@ class PutOnBridgeInSceneEnv(PutOnInSceneEnv, CustomBridgeMultiObjectsInSceneEnv)
             # 检查组合中任意两点之间的距离是否都不小于最小间隔
             for p1, p2 in combinations(comb, 2):
                 distance = np.linalg.norm(p1 - p2)
-                if distance <= 0.075:
+                if distance <= threshold:
                     is_valid = False
                     break
             if is_valid:
@@ -188,7 +204,7 @@ class PutOnBridgeInSceneEnv(PutOnInSceneEnv, CustomBridgeMultiObjectsInSceneEnv)
                 is_valid = True
                 for p1, p2 in combinations(selected_xy, 2):
                     distance = np.linalg.norm(p1 - p2)
-                    if distance <= 0.075:
+                    if distance <= threshold:
                         is_valid = False
                         break
                 if is_valid:

@@ -9,6 +9,7 @@ from transforms3d.quaternions import quat2mat
 
 from mani_skill2_real2sim.utils.common import random_choice
 from mani_skill2_real2sim.utils.registration import register_env
+from mani_skill2_real2sim.utils.object_name_map import name_map
 from mani_skill2_real2sim import ASSET_DIR
 import random
 

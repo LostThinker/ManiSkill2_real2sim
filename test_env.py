@@ -8,7 +8,7 @@ import numpy as np
 
 def test_env(task_name):
     env_kwargs = {}
-    env_kwargs['obj_name'] = "blue cup"
+    env_kwargs['obj_name'] = "blender_grapes"
     env_kwargs["obs_mode"] = "rgbd",
     env_kwargs["prepackaged_config"] = True
 
@@ -16,7 +16,8 @@ def test_env(task_name):
 
     env_reset_options = {}
     env_reset_options["obj_init_options"] = {
-        "episode_id": random.randint(0, 100),  # this determines the obj inits in bridge
+        # "episode_id": random.randint(0, 100),  # this determines the obj inits in bridge
+        "episode_id": 13,  # this determines the obj inits in bridge
     }
     obs = env.reset(options=env_reset_options)
     instr = env.get_language_instruction()
@@ -33,13 +34,17 @@ def test_env(task_name):
 def check_episode(task_name):
     env_kwargs = {}
     env_kwargs['obj_name'] = "orange"
-    env_kwargs["distractor_obj_names"] = []
+    # env_kwargs["distractor_obj_names"] = []
     env_kwargs["obs_mode"] = "rgbd",
     env_kwargs["prepackaged_config"] = True
 
+    # 假设每行显示 10 个小图像
+    rows = 10
+    cols = 10
+
     env = gym.make(task_name, **env_kwargs)
     images = []
-    for i in range(100):
+    for i in range(rows*cols):
         env_reset_options = {}
         env_reset_options["obj_init_options"] = {
             "episode_id": i,  # this determines the obj inits in bridge
@@ -49,9 +54,7 @@ def check_episode(task_name):
         pil_image = Image.fromarray(np.uint8(image))
         images.append(pil_image)
 
-    # 假设每行显示 10 个小图像
-    rows = 10
-    cols = 10
+
 
     # 获取小图像的尺寸
     width, height = images[0].size
@@ -96,7 +99,8 @@ if __name__ == '__main__':
     seed = 0
     random.seed(seed)
     np.random.seed(seed)
-    test_env("PutFruitOnPlateInScene-v0")
+    # test_env("PutUnseenObjOnPlateInSceneDebug-v0")
+    test_env("PutFruitOnBinInSceneMulti-v0")
     # test_env("PutDrinkOnPlateInSceneDistract-v0")
     # test_env("PutUnseenObjOnPlateInScene-v0")
-    # check_episode("PutEggplantInBasketSceneDistract-v0")
+    # check_episode("PutToyOnBinInSceneMulti-v0")
